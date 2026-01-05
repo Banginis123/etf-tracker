@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# Environment variables
+.env
+
+# Databases
+*.db
+*.sqlite3
+db.etfs
+etf.db
+
+# Node
+node_modules/
+
+# Logs
+*.log
+cron.log
+
+# Backups
+*.bak
+backups/
+
+# OS
+.DS_Store

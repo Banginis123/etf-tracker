@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="utf-8">
+    <title>ETF'ai</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+        }
+
+        /* ===== PAGE LAYOUT ===== */
+
+        .page {
+            padding: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .page {
+                max-width: 1200px;
+                margin: auto;
+                padding: 20px;
+            }
+        }
+
+        /* ===== HEADER ===== */
+
+        h2 {
+            text-align: center;
+            margin: 0 0 12px 0;
+            font-size: clamp(1.6rem, 5vw, 2.2rem);
+        }
+
+        nav {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        nav a {
+            margin: 0 10px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        h3 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        h3 a {
+            font-size: 0.85em;
+            text-decoration: none;
+        }
+
+        /* ===== ALERT BOX ===== */
+
+        .error-box {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #cc0000;
+            background-color: #ffe6e6;
+            color: #990000;
+            font-weight: bold;
+        }
+
+        /* ===== TABLE (ROOT STYLE) ===== */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+
+        th, td {
+            padding: 4px 6px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        thead th {
+            background: #f5f5f5;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* MOBILE DEFAULT */
+        td.col-left {
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        td.col-center {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* ===== PC OVERRIDE ===== */
+        @media (min-width: 768px) {
+            td.col-left {
+                text-align: center; /* 👈 1 stulpelis centruojamas TIK PC */
+            }
+        }
+
+        /* ===== MOBILE ===== */
+
+        @media (max-width: 600px) {
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 3px 4px;
+            }
+
+            nav a {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+<h2>📁 ETF'ai</h2>
+
+<nav>
+    <a href="/">🏠 Portfolio</a>
+    <a href="/admin">📊 Admin</a>
+    <a href="/admin/alerts">🚨 Alerts</a>
+</nav>
+
+<hr>
+
+<h3>
+    📄 ETF sąrašas
+    <a href="/admin/etfs/new">➕ Add new ETF</a>
+</h3>
+
+{% if error %}
+<div class="error-box">
+    ⚠️ {{ error }}
+</div>
+{% endif %}
+
+<table>
+    <thead>
+        <tr>
+            <th>Ticker</th>
+            <th>ATH price</th>
+            <th>Drop (%)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for etf in etfs %}
+        <tr>
+            <td class="col-left">{{ etf.ticker }}</td>
+            <td class="col-center">
+                {% if etf.ath_price is not none %}
+                    {{ "%.2f"|format(etf.ath_price) }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="col-center">{{ etf.drop_threshold }}</td>
+            <td class="col-center">
+                <a href="/admin/etfs/{{ etf.id }}/edit">✏ Edit</a>
+                |
+                <form
+                    method="post"
+                    action="/admin/etfs/{{ etf.id }}/delete"
+                    style="display:inline;"
+                    onsubmit="return confirm('Ar tikrai ištrinti ETF {{ etf.ticker }}?');"
+                >
+                    <button type="submit">🗑 Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</div>
+
+</body>
+</html>

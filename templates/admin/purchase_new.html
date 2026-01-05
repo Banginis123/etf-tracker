@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Transaction</title>
+</head>
+<body>
+
+<h1>➕ Add ETF Transaction</h1>
+
+<form method="post">
+    <label>
+        ETF:
+        <select name="etf_id" required>
+            {% for etf in etfs %}
+                <option value="{{ etf.id }}">{{ etf.ticker }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <br><br>
+
+    <label>
+        Type:
+        <select name="side" required>
+            <option value="BUY">BUY</option>
+            <option value="SELL">SELL</option>
+        </select>
+    </label>
+    <br><br>
+
+    <label>
+        Units:
+        <input type="number" name="units" step="0.0001" min="0.0001" required>
+    </label>
+    <br><br>
+
+    <label>
+        Price:
+        <input type="number" name="price" step="0.01" required>
+    </label>
+    <br><br>
+
+    <label>
+        Purchased at (YYYY-MM-DD):
+        <input type="date" name="purchased_at" required>
+    </label>
+    <br><br>
+
+    <button type="submit">💾 Save</button>
+</form>
+
+<a href="/admin">⬅ Back</a>
+
+</body>
+</html>

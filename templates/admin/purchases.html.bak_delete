@@ -1,0 +1,34 @@
+<h1>Purchases</h1>
+
+<a href="/admin/purchases/new">New purchase</a>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>ETF</th>
+        <th>Units</th>
+        <th>Price</th>
+        <th>Purchased at</th>
+        <th>Currency</th>
+        <th>Comment</th>
+        <th>Actions</th>
+    </tr>
+    {% for p in purchases %}
+    <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ etf_map.get(p.etf_id) }}</td>
+        <td>{{ p.units }}</td>
+        <td>{{ p.price }}</td>
+        <td>{{ p.purchased_at }}</td>
+        <td>{{ p.currency }}</td>
+        <td>{{ p.comment }}</td>
+        <td>
+            <a href="/admin/purchases/{{ p.id }}/edit">Edit</a>
+            <form method="post" action="/admin/purchases/{{ p.id }}/delete" style="display:inline;"
+                  onsubmit="return confirm('Delete purchase?');">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

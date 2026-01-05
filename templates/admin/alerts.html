@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="utf-8">
+    <title>ETF Alerts</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+            font-family: system-ui, sans-serif;
+        }
+
+        .page {
+            padding: 16px 12px;
+            max-width: 100vw;
+        }
+
+        @media (min-width: 768px) {
+            .page {
+                max-width: 1100px;
+                margin: 0 auto;
+            }
+        }
+
+        header {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: clamp(1.8rem, 4vw, 2.4rem);
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        hr {
+            margin: 16px 0 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            margin-bottom: 28px;
+        }
+
+        th, td {
+            padding: 6px 6px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        thead th {
+            background: #f5f5f5;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        td.center {
+            text-align: center;
+        }
+
+        td.actions {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        /* Drop threshold input – MOBILE (default) */
+        input[type="number"] {
+            width: 5.5ch;
+            padding: 5px 4px;
+            font-size: 0.95rem;
+            text-align: center;
+            border: 2px solid #555;
+            border-radius: 6px;
+            background: #fffef5;
+        }
+
+        /* PC versija – platesnis */
+        @media (min-width: 768px) {
+            input[type="number"] {
+                width: 8ch;
+            }
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #000;
+            background: #ffffff;
+        }
+
+        input[type="submit"] {
+            padding: 4px 8px;
+            font-size: 0.9rem;
+        }
+
+        td.actions form {
+            margin: 0;
+        }
+
+        /* 🔧 Alert History – stulpelių optimizavimas */
+        table.alert-history col.etf   { width: 7ch; }
+        table.alert-history col.price { width: 6ch; }
+        table.alert-history col.ath   { width: 6ch; }
+        table.alert-history col.date  { width: auto; }
+
+        table.alert-history td {
+            white-space: nowrap;
+        }
+
+        table.alert-history td.date {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+<header>
+    <h2>🚨 Alerts</h2>
+</header>
+
+<nav>
+    <a href="/">🏠 Portfolio</a>
+    <a href="/admin">📊 Admin</a>
+    <a href="/admin/etfs">📦 ETF'ai</a>
+</nav>
+
+<hr>
+
+<h3>📉 Alert Settings</h3>
+
+<table>
+    <thead>
+        <tr>
+            <th>ETF</th>
+            <th>ATH price</th>
+            <th>Drop threshold (%)</th>
+            <th>Last alert price</th>
+            <th>ATH alert sent</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for etf in etfs %}
+        <tr>
+            <td class="center">{{ etf.ticker }}</td>
+
+            <td class="center">
+                {% if etf.ath_price is not none %}
+                    {{ "%.2f"|format(etf.ath_price) }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td class="center">
+                <form method="post" action="/admin/api/etfs/{{ etf.id }}/threshold">
+                    <input
+                        type="number"
+                        name="drop_threshold"
+                        step="0.01"
+                        value="{{ "%.2f"|format(etf.drop_threshold) }}"
+                    >
+                    <input type="submit" value="Save">
+                </form>
+            </td>
+
+            <td class="center">
+                {% if etf.last_alert_price is not none %}
+                    {{ "%.2f"|format(etf.last_alert_price) }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td class="center">{{ "YES" if etf.ath_alert_sent else "NO" }}</td>
+
+            <td class="actions">
+                <form method="post" action="/admin/api/etfs/{{ etf.id }}/reset">
+                    <input type="submit" value="Reset">
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<hr>
+
+<h3>📜 Alert History (last 10)</h3>
+
+<table class="alert-history">
+    <colgroup>
+        <col class="etf">
+        <col class="price">
+        <col class="ath">
+        <col class="date">
+    </colgroup>
+    <thead>
+        <tr>
+            <th>ETF</th>
+            <th>Price</th>
+            <th>ATH</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in alerts %}
+        <tr>
+            <td class="center">{{ a.ticker }}</td>
+            <td class="center">{{ "%.2f"|format(a.price) }}</td>
+            <td class="center">{{ "%.2f"|format(a.ath_price) }}</td>
+            <td class="center date">{{ a.created_at.strftime("%Y.%m.%d %H:%M:%S") }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</div>
+</body>
+</html>

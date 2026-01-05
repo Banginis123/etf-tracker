@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Portfolio</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .sum { font-size: 20px; margin-bottom: 10px; }
+        .ytd { font-size: 18px; margin-bottom: 20px; color: #333; }
+        canvas { max-width: 400px; }
+    </style>
+</head>
+<body>
+
+<h2>💼 Portfolio</h2>
+
+<div class="sum">
+    <b>Total value:</b> {{ "%.2f"|format(total_value) }} €
+</div>
+
+<div class="ytd">
+    <b>YTD:</b>
+    {{ "%.2f"|format(ytd_eur) }} €
+    ({{ "%.2f"|format(ytd_percent) }} %)
+</div>
+
+<canvas id="portfolioChart"></canvas>
+
+<script>
+const data = {
+    labels: [
+        {% for etf in portfolio %}
+            "{{ etf.ticker }}",
+        {% endfor %}
+    ],
+    datasets: [{
+        data: [
+            {% for etf in portfolio %}
+                {{ etf.value }},
+            {% endfor %}
+        ],
+    }]
+};
+
+new Chart(document.getElementById('portfolioChart'), {
+    type: 'pie',
+    data: data
+});
+</script>
+
+</body>
+</html>

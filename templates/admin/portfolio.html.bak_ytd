@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ETF Portfolio</title>
+    <style>
+        body { font-family: sans-serif; padding: 10px; }
+        .card { border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+
+<h2>💼 Portfolio</h2>
+<a href="/admin/settings">⚙️ Settings</a>
+<hr>
+
+{% for etf in etfs %}
+<div class="card">
+    <b>{{ etf.ticker }}</b><br><br>
+
+    <form method="post" action="/admin/etfs/{{ etf.id }}/update-portfolio">
+        Units:<br>
+        <input type="number" step="0.01" name="units" value="{{ etf.units }}"><br>
+        Avg buy price:<br>
+        <input type="number" step="0.01" name="avg_buy_price" value="{{ etf.avg_buy_price }}"><br>
+        <button type="submit">💾 Save</button>
+    </form>
+
+    <br>
+    Invested: {{ "%.2f"|format(etf.invested) if etf.invested else "—" }}<br>
+    Value: {{ "%.2f"|format(etf.current_value) if etf.current_value else "—" }}<br>
+    P/L:
+    {% if etf.profit is not none %}
+        {{ "%.2f"|format(etf.profit) }} €
+        ({{ "%.2f"|format(etf.profit_percent) }} %)
+    {% else %}
+        —
+    {% endif %}
+</div>
+{% endfor %}
+
+</body>
+</html>

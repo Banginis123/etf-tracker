@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>💼 Portfolio</h2>
+<b>Total value:</b> {{ total }} €
+
+<canvas id="chart"></canvas>
+
+<table border="1" cellpadding="5">
+<tr>
+    <th>ETF</th><th>Units</th><th>Current price</th><th>Value</th>
+</tr>
+{% for r in rows %}
+<tr>
+    <td>{{ r.ticker }}</td>
+    <td>{{ r.units }}</td>
+    <td>{{ "%.2f"|format(r.price) if r.price else "—" }}</td>
+    <td>{{ "%.2f"|format(r.value) }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<script>
+new Chart(document.getElementById('chart'), {
+    type: 'pie',
+    data: {
+        labels: {{ labels | safe }},
+        datasets: [{
+            data: {{ values | safe }}
+        }]
+    }
+});
+</script>
+
+{% endblock %}

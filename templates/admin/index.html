@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ETF Admin</title>
+</head>
+<body>
+
+<h2>📊 ETF Admin Dashboard</h2>
+
+<p>
+    <a href="/">🏠 Portfolio</a> |
+    <a href="/admin/purchases/new">➕ Add purchase</a>
+</p>
+
+<h3>ETFs</h3>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>Ticker</th>
+        <th>Name</th>
+    </tr>
+    {% for etf in etfs %}
+    <tr>
+        <td>{{ etf.ticker }}</td>
+        <td>{{ etf.name }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<h3>Purchases</h3>
+<table border="1" cellpadding="6">
+    <tr>
+        <th>ETF</th>
+        <th>Units</th>
+        <th>Price</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for p in purchases %}
+    <tr>
+        <td>{{ p.etf.ticker }}</td>
+        <td>{{ p.units }}</td>
+        <td>{{ p.price }}</td>
+        <td>
+            <a href="/admin/purchases/{{ p.id }}/edit">✏️ Edit</a>
+            |
+            <a href="/admin/purchases/{{ p.id }}/delete"
+               onclick="return confirm('Delete purchase?')">🗑 Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ETF Tracker</title>
+    <script src="/static/chart.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        nav a { margin-right: 15px; }
+        canvas { max-height: 300px; }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="/">📊 Portfolio</a>
+    <a href="/admin">⚙️ Admin</a>
+</nav>
+<hr>
+{% block content %}{% endblock %}
+</body>
+</html>
