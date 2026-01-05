@@ -9,3 +9,4 @@ yfinance
 pandas
 requests
 email-validator
+python-multipart
