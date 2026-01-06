@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import RedirectResponse
-import requests
 
 from templating import templates
+from database import SessionLocal
+from models import Purchase, ETF
 
 router = APIRouter(prefix="/admin", tags=["admin-purchases"])
-
-API_BASE = "http://127.0.0.1:8000/admin/api"
 
 
 @router.get("/__ping")
@@ -14,14 +13,42 @@ def ping():
     return {"ok": True}
 
 
-def fetch_json(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
-        raise HTTPException(
-            status_code=500,
-            detail=f"API error {r.status_code}: {r.text}"
-        )
-    return r.json()
+# =========================================================
+# DB helpers (vietoj HTTP į localhost)
+# =========================================================
+def get_db():
+    db = SessionLocal()
+    try:
+        return db
+    finally:
+        db.close()
+
+
+def get_etfs():
+    db = get_db()
+    return db.query(ETF).all()
+
+
+def get_purchases():
+    db = get_db()
+    return db.query(Purchase).all()
+
+
+def get_purchase(purchase_id: int):
+    db = get_db()
+    purchase = db.query(Purchase).filter(Purchase.id == purchase_id).first()
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+    return purchase
+
+
+def delete_purchase_db(purchase_id: int):
+    db = get_db()
+    purchase = db.query(Purchase).filter(Purchase.id == purchase_id).first()
+    if not purchase:
+        raise HTTPException(status_code=404, detail="Purchase not found")
+    db.delete(purchase)
+    db.commit()
 
 
 # -------------------------
@@ -29,10 +56,10 @@ def fetch_json(url: str):
 # -------------------------
 @router.get("/purchases")
 def purchases_list(request: Request):
-    purchases = fetch_json(f"{API_BASE}/purchases")
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    purchases = get_purchases()
+    etfs = get_etfs()
 
-    etf_map = {e["id"]: e["ticker"] for e in etfs}
+    etf_map = {e.id: e.ticker for e in etfs}
 
     return templates.TemplateResponse(
         "admin/purchases.html",
@@ -49,7 +76,7 @@ def purchases_list(request: Request):
 # -------------------------
 @router.get("/purchases/new")
 def new_purchase_form(request: Request):
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    etfs = get_etfs()
 
     return templates.TemplateResponse(
         "admin/purchase_form.html",
@@ -68,8 +95,8 @@ def new_purchase_form(request: Request):
 # -------------------------
 @router.get("/purchases/{purchase_id}/edit")
 def edit_purchase_form(purchase_id: int, request: Request):
-    purchase = fetch_json(f"{API_BASE}/purchases/{purchase_id}")
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    purchase = get_purchase(purchase_id)
+    etfs = get_etfs()
 
     return templates.TemplateResponse(
         "admin/purchase_form.html",
@@ -78,7 +105,7 @@ def edit_purchase_form(purchase_id: int, request: Request):
             "etfs": etfs,
             "purchase": purchase,
             "action": f"/admin/api/purchases/{purchase_id}",
-            "method": "put",
+            "method": "post",
         },
     )
 
@@ -88,11 +115,7 @@ def edit_purchase_form(purchase_id: int, request: Request):
 # -------------------------
 @router.post("/purchases/{purchase_id}/delete")
 def delete_purchase_post(purchase_id: int):
-    r = requests.delete(f"{API_BASE}/purchases/{purchase_id}")
-
-    if r.status_code != 200:
-        raise HTTPException(status_code=500, detail=r.text)
-
+    delete_purchase_db(purchase_id)
     return RedirectResponse("/admin/purchases", status_code=303)
 
 
@@ -101,9 +124,5 @@ def delete_purchase_post(purchase_id: int):
 # -------------------------
 @router.get("/purchases/{purchase_id}/delete")
 def delete_purchase_get(purchase_id: int):
-    r = requests.delete(f"{API_BASE}/purchases/{purchase_id}")
-
-    if r.status_code != 200:
-        raise HTTPException(status_code=500, detail=r.text)
-
+    delete_purchase_db(purchase_id)
     return RedirectResponse("/admin/purchases", status_code=303)
