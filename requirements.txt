@@ -10,3 +10,4 @@ pandas
 requests
 email-validator
 python-multipart
+fastapi-mail
