@@ -6,7 +6,7 @@ from templating import templates
 
 router = APIRouter(prefix="/admin", tags=["admin-etfs"])
 
-API_BASE = "http://127.0.0.1:8000/admin/api"
+API_BASE = "/admin/api"
 
 
 def fetch_json(url: str):
