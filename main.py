@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
+# DB
+from database import engine, Base
+
 # Routers
 from admin_ui import router as admin_router
 from admin_alerts import router as admin_alerts_router
@@ -17,6 +20,9 @@ from scheduler import start_scheduler, stop_scheduler
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # 🔧 SUKURIAMOS VISOS LENTELĖS (jei jų nėra)
+    Base.metadata.create_all(bind=engine)
+
     start_scheduler()
     yield
     stop_scheduler()
