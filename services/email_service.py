@@ -1,32 +1,29 @@
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
-from dotenv import load_dotenv
 import os
-from pathlib import Path
 import asyncio
 
 
 # --- ENV ---
-BASE_DIR = Path(__file__).resolve().parent.parent
-ENV_PATH = BASE_DIR / ".env"
-load_dotenv(dotenv_path=ENV_PATH)
-
-SMTP_USER = os.getenv("SMTP_USER")
-SMTP_PASS = os.getenv("SMTP_PASS")
+# Render nenaudoja .env failo, jis perduoda ENV tiesiogiai
+SMTP_USER = os.getenv("SMTP_USER") or os.getenv("MAIL_USERNAME")
+SMTP_PASS = os.getenv("SMTP_PASS") or os.getenv("MAIL_PASSWORD")
 ALERT_EMAIL = os.getenv("ALERT_EMAIL")
 
 if not SMTP_USER or not SMTP_PASS or not ALERT_EMAIL:
-    raise ValueError("❌ EMAIL ENV klaida: patikrinkite .env failą!")
+    raise ValueError("❌ EMAIL ENV klaida: patikrinkite Render Environment Variables!")
+
 
 # --- MAIL CONFIG ---
 conf = ConnectionConfig(
     MAIL_USERNAME=SMTP_USER,
     MAIL_PASSWORD=SMTP_PASS,
     MAIL_FROM=SMTP_USER,
-    MAIL_PORT=587,
-    MAIL_SERVER="smtp.gmail.com",
+    MAIL_PORT=int(os.getenv("MAIL_PORT", "587")),
+    MAIL_SERVER=os.getenv("MAIL_SERVER", "smtp.gmail.com"),
     MAIL_STARTTLS=True,
     MAIL_SSL_TLS=False,
 )
+
 
 # --- ASYNC ---
 async def send_alert_email(ticker: str, ath: float, current: float, drop_percent: float):
@@ -56,7 +53,7 @@ Automatinis pranešimas
     await fm.send_message(message)
 
 
-# --- SYNC WRavoid asyncio scheduler konfliktų ---
+# --- SYNC WRAPPER (kad išvengti asyncio scheduler konfliktų) ---
 def send_alert_email_sync(triggered_etfs):
     fm = FastMail(conf)
 
@@ -107,5 +104,4 @@ def send_daily_summary_if_needed(triggered_etfs):
         subtype="plain",
     )
 
-    import asyncio
     asyncio.run(fm.send_message(message))
