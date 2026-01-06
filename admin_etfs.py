@@ -6,10 +6,11 @@ from templating import templates
 
 router = APIRouter(prefix="/admin", tags=["admin-etfs"])
 
-API_BASE = "/admin/api"
 
+def fetch_json(request: Request, path: str):
+    base_url = str(request.base_url).rstrip("/")
+    url = f"{base_url}{path}"
 
-def fetch_json(url: str):
     r = requests.get(url)
     if r.status_code != 200:
         raise HTTPException(
@@ -24,7 +25,7 @@ def fetch_json(url: str):
 # -------------------------
 @router.get("/etfs")
 def etfs_list(request: Request):
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    etfs = fetch_json(request, "/admin/api/etfs")
 
     return templates.TemplateResponse(
         "admin/etfs.html",
@@ -56,7 +57,7 @@ def new_etf_form(request: Request):
 # -------------------------
 @router.get("/etfs/{etf_id}/edit")
 def edit_etf_form(etf_id: int, request: Request):
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    etfs = fetch_json(request, "/admin/api/etfs")
     etf = next((e for e in etfs if e["id"] == etf_id), None)
 
     if not etf:
@@ -77,7 +78,8 @@ def edit_etf_form(etf_id: int, request: Request):
 # -------------------------
 @router.post("/etfs/{etf_id}/delete")
 def delete_etf(etf_id: int, request: Request):
-    r = requests.delete(f"{API_BASE}/etfs/{etf_id}")
+    base_url = str(request.base_url).rstrip("/")
+    r = requests.delete(f"{base_url}/admin/api/etfs/{etf_id}")
 
     if r.status_code != 200:
         error_msg = "ETF cannot be deleted"
@@ -87,7 +89,7 @@ def delete_etf(etf_id: int, request: Request):
         except Exception:
             pass
 
-        etfs = fetch_json(f"{API_BASE}/etfs")
+        etfs = fetch_json(request, "/admin/api/etfs")
 
         return templates.TemplateResponse(
             "admin/etfs.html",

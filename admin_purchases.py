@@ -6,15 +6,16 @@ from templating import templates
 
 router = APIRouter(prefix="/admin", tags=["admin-purchases"])
 
-API_BASE = "/admin/api"
-
 
 @router.get("/__ping")
 def ping():
     return {"ok": True}
 
 
-def fetch_json(url: str):
+def fetch_json(request: Request, path: str):
+    base_url = str(request.base_url).rstrip("/")
+    url = f"{base_url}{path}"
+
     r = requests.get(url)
     if r.status_code != 200:
         raise HTTPException(
@@ -29,8 +30,8 @@ def fetch_json(url: str):
 # -------------------------
 @router.get("/purchases")
 def purchases_list(request: Request):
-    purchases = fetch_json(f"{API_BASE}/purchases")
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    purchases = fetch_json(request, "/admin/api/purchases")
+    etfs = fetch_json(request, "/admin/api/etfs")
 
     etf_map = {e["id"]: e["ticker"] for e in etfs}
 
@@ -49,7 +50,7 @@ def purchases_list(request: Request):
 # -------------------------
 @router.get("/purchases/new")
 def new_purchase_form(request: Request):
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    etfs = fetch_json(request, "/admin/api/etfs")
 
     return templates.TemplateResponse(
         "admin/purchase_form.html",
@@ -68,8 +69,8 @@ def new_purchase_form(request: Request):
 # -------------------------
 @router.get("/purchases/{purchase_id}/edit")
 def edit_purchase_form(purchase_id: int, request: Request):
-    purchase = fetch_json(f"{API_BASE}/purchases/{purchase_id}")
-    etfs = fetch_json(f"{API_BASE}/etfs")
+    purchase = fetch_json(request, f"/admin/api/purchases/{purchase_id}")
+    etfs = fetch_json(request, "/admin/api/etfs")
 
     return templates.TemplateResponse(
         "admin/purchase_form.html",
@@ -87,8 +88,9 @@ def edit_purchase_form(purchase_id: int, request: Request):
 # Delete purchase (POST)
 # -------------------------
 @router.post("/purchases/{purchase_id}/delete")
-def delete_purchase_post(purchase_id: int):
-    r = requests.delete(f"{API_BASE}/purchases/{purchase_id}")
+def delete_purchase_post(purchase_id: int, request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    r = requests.delete(f"{base_url}/admin/api/purchases/{purchase_id}")
 
     if r.status_code != 200:
         raise HTTPException(status_code=500, detail=r.text)
@@ -100,8 +102,9 @@ def delete_purchase_post(purchase_id: int):
 # Delete purchase (GET fallback – admin UI)
 # -------------------------
 @router.get("/purchases/{purchase_id}/delete")
-def delete_purchase_get(purchase_id: int):
-    r = requests.delete(f"{API_BASE}/purchases/{purchase_id}")
+def delete_purchase_get(purchase_id: int, request: Request):
+    base_url = str(request.base_url).rstrip("/")
+    r = requests.delete(f"{base_url}/admin/api/purchases/{purchase_id}")
 
     if r.status_code != 200:
         raise HTTPException(status_code=500, detail=r.text)
